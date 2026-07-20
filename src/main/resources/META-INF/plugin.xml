@@ -1,0 +1,41 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <id>org.jetbrains.plugins.template</id>
+    <name>IntelliJ Platform Plugin Template</name>
+    <vendor>JetBrains</vendor>
+
+    <description><![CDATA[
+    <p><b>Pony Malta</b> is an IntelliJ IDEA plugin for exploring Java business logic through an interactive call graph.</p>
+
+    <p>Analyze method execution flow, navigate between caller and callee methods, and visualize application architecture by layers such as Controller, Service, Repository, DTO, Entity, and Utility.</p>
+
+    <ul>
+        <li>🌳 Interactive Flow View</li>
+        <li>📂 Layer-based Architecture View</li>
+        <li>🔍 Search within the call tree</li>
+        <li>🖱 Double-click to navigate directly to source code</li>
+        <li>🎨 Colored nodes and contextual method icons</li>
+    </ul>
+]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
+
+    <resource-bundle>messages.MyBundle</resource-bundle>
+
+    <actions>
+
+        <action
+                id="com.malta.plugin.action.HelloAction"
+                class="com.malta.plugin.action.HelloAction"
+                text="Analyze Method"
+                description="Analyze method call flow with Pony Malta">
+
+            <add-to-group
+                    group-id="EditorPopupMenu"
+                    anchor="last"/>
+
+        </action>
+
+    </actions>
+</idea-plugin>
