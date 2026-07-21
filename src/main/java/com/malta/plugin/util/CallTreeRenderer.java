@@ -1,9 +1,9 @@
-package util;
+package com.malta.plugin.util;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
-import model.CallNode;
+import com.malta.plugin.model.CallNode;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;

@@ -1,8 +1,8 @@
-package resolver;
+package com.malta.plugin.resolver;
 
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
-import util.LayerType;
+import com.malta.plugin.util.LayerType;
 
 public class LayerResolver {
 

@@ -1,6 +1,6 @@
-package builder;
+package com.malta.plugin.builder;
 
-import model.CallNode;
+import com.malta.plugin.model.CallNode;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 

@@ -1,6 +1,6 @@
-package util;
+package com.malta.plugin.util;
 
-import model.CallNode;
+import com.malta.plugin.model.CallNode;
 
 public class CallGraphPrinter {
 

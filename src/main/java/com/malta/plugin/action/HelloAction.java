@@ -1,21 +1,20 @@
 package com.malta.plugin.action;
 
-import analyzer.MethodAnalyzer;
-import builder.FlowTreeBuilder;
-import builder.LayerTreeBuilder;
+import com.malta.plugin.analyzer.analyzer.MethodAnalyzer;
+import com.malta.plugin.builder.FlowTreeBuilder;
+import com.malta.plugin.builder.LayerTreeBuilder;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
-import model.CallNode;
+import com.malta.plugin.model.CallNode;
 import org.jetbrains.annotations.NotNull;
-import util.CallTreeFilter;
-import util.CallTreeRenderer;
+import com.malta.plugin.util.CallTreeFilter;
+import com.malta.plugin.util.CallTreeRenderer;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;

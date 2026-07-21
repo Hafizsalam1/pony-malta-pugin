@@ -1,8 +1,8 @@
-package model;
+package com.malta.plugin.model;
 
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
-import util.OperationType;
+import com.malta.plugin.util.OperationType;
 
 public class TableAccess {
     private final String tableName;
