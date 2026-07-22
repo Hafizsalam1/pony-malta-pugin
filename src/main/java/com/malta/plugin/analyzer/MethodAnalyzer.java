@@ -1,4 +1,4 @@
-package com.malta.plugin.analyzer.analyzer;
+package com.malta.plugin.analyzer;
 
 import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiClass;

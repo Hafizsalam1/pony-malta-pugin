@@ -1,20 +1,21 @@
 package com.malta.plugin.action;
 
-import com.malta.plugin.analyzer.analyzer.MethodAnalyzer;
+import com.malta.plugin.analyzer.MethodAnalyzer;
 import com.malta.plugin.builder.FlowTreeBuilder;
 import com.malta.plugin.builder.LayerTreeBuilder;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.editor.Editor;
+
 import com.intellij.psi.*;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.malta.plugin.controller.CallTreeController;
 import com.malta.plugin.model.CallNode;
+import com.malta.plugin.resolver.MethodResolver;
+import com.malta.plugin.service.CallGraphService;
 import org.jetbrains.annotations.NotNull;
-import com.malta.plugin.util.CallTreeFilter;
-import com.malta.plugin.util.CallTreeRenderer;
+import com.malta.plugin.filter.CallTreeFilter;
+import com.malta.plugin.renderer.CallTreeRenderer;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -30,44 +31,23 @@ public class HelloAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
 
-        Editor editor = anActionEvent.getData(CommonDataKeys.EDITOR);
+        PsiMethod method = MethodResolver.findMethod(anActionEvent);
 
-        PsiFile psiFile = anActionEvent.getData(CommonDataKeys.PSI_FILE);
-
-        if(psiFile==null){
+        if (method == null) {
             return;
         }
-
-        if(editor==null){
-            return;
-        }
-        int offset = editor.getCaretModel().getOffset();
-        PsiElement element = psiFile.findElementAt(offset);
-        PsiMethod method = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
-
-        if(method == null){
-            return;
-        }
-
         // Build Call Graph
-        MethodAnalyzer analyzer = new MethodAnalyzer();
+        CallNode root =  new CallGraphService().analyze(method);
 
-        CallNode root = analyzer.analyze(method);
-
-
-// Build Flow Tree
+        // Build Flow Tree
         FlowTreeBuilder flowBuilder = new FlowTreeBuilder();
 
-        DefaultMutableTreeNode flowRoot =
-                flowBuilder.build(root);
+        DefaultMutableTreeNode flowRoot = flowBuilder.build(root);
 
-
-// Build Layer Tree
+        // Build Layer Tree
         LayerTreeBuilder layerBuilder = new LayerTreeBuilder();
 
-        DefaultMutableTreeNode layerRoot =
-                layerBuilder.build(root);
-
+        DefaultMutableTreeNode layerRoot = layerBuilder.build(root);
 
         final DefaultMutableTreeNode[] currentRoot = {
                 flowRoot
@@ -79,7 +59,9 @@ public class HelloAction extends AnAction {
         };
 
         JTree tree = new JTree(currentModel[0]);
+        tree.setToggleClickCount(0);
 
+        tree.setCellRenderer(new CallTreeRenderer());
 
         tree.setCellRenderer(
                 new CallTreeRenderer()
@@ -101,126 +83,16 @@ public class HelloAction extends AnAction {
         searchPanel.add(switchButton, BorderLayout.EAST);
 
 
-        searchField.getDocument().addDocumentListener(
-                new DocumentListener() {
-
-                    @Override
-                    public void insertUpdate(DocumentEvent e) {
-                        filterTree();
-                    }
-
-                    @Override
-                    public void removeUpdate(DocumentEvent e) {
-                        filterTree();
-                    }
-
-                    @Override
-                    public void changedUpdate(DocumentEvent e) {
-                        filterTree();
-                    }
-
-                    private void filterTree() {
-
-
-                        String keyword = searchField.getText();
-
-                        if(keyword.isBlank()) {
-
-                            tree.setModel(currentModel[0]);
-
-                        } else {
-
-                            DefaultMutableTreeNode filtered =
-                                    filter.filter(currentRoot[0], keyword);
-
-                            tree.setModel(
-                                    new DefaultTreeModel(filtered)
-                            );
-                        }
-                    }
-
-                });
-
-        tree.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-                if (e.getClickCount() != 2) {
-                    return;
-                }
-
-                TreePath path =
-                        tree.getPathForLocation(e.getX(), e.getY());
-
-                if (path == null) {
-                    return;
-                }
-
-                DefaultMutableTreeNode treeNode =
-                        (DefaultMutableTreeNode) path.getLastPathComponent();
-
-                Object userObject = treeNode.getUserObject();
-
-                if (!(userObject instanceof CallNode callNode)) {
-                    return;
-                }
-
-                PsiMethod method = callNode.getMethod();
-
-                if (method != null && method.canNavigate()) {
-                    method.navigate(true);
-                }
-
-            }
-
-        });
-
-
-
-        switchButton.addActionListener(e -> {
-
-            if (switchButton.getText().equals("Layer View")) {
-
-
-                currentRoot[0] = layerRoot;
-
-
-                currentModel[0] =
-                        new DefaultTreeModel(layerRoot);
-
-
-                tree.setModel(
-                        currentModel[0]
+        CallTreeController controller =
+                new CallTreeController(
+                        tree,
+                        searchField,
+                        switchButton,
+                        flowRoot,
+                        layerRoot
                 );
 
-
-                switchButton.setText("Flow View");
-
-
-            } else {
-
-
-                currentRoot[0] = flowRoot;
-
-
-                currentModel[0] =
-                        new DefaultTreeModel(flowRoot);
-
-
-                tree.setModel(
-                        currentModel[0]
-                );
-
-
-                switchButton.setText("Layer View");
-
-            }
-
-
-            tree.expandRow(0);
-
-        });
+        controller.init();
 
         JScrollPane scrollPane = new JScrollPane(tree);
 
@@ -243,23 +115,9 @@ public class HelloAction extends AnAction {
     @Override
     public void update(@NotNull AnActionEvent e) {
 
-        Editor editor = e.getData(CommonDataKeys.EDITOR);
-        PsiFile file = e.getData(CommonDataKeys.PSI_FILE);
-
-        boolean visible = false;
-
-        if (editor != null && file != null) {
-
-            PsiElement element =
-                    file.findElementAt(editor.getCaretModel().getOffset());
-
-            visible = PsiTreeUtil.getParentOfType(
-                    element,
-                    PsiMethod.class
-            ) != null;
-        }
-
-        e.getPresentation().setEnabledAndVisible(visible);
+        e.getPresentation().setEnabledAndVisible(
+                MethodResolver.findMethod(e) != null
+        );
     }
 
     @Override

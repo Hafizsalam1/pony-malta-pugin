@@ -1,4 +1,4 @@
-package com.malta.plugin.util;
+package com.malta.plugin.renderer;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.psi.PsiClass;

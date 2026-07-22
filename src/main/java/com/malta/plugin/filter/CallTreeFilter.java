@@ -1,4 +1,4 @@
-package com.malta.plugin.util;
+package com.malta.plugin.filter;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.Enumeration;
