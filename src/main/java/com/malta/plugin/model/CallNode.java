@@ -1,8 +1,8 @@
-package model;
+package com.malta.plugin.model;
 
 import com.intellij.psi.PsiMethod;
-import resolver.LayerResolver;
-import util.LayerType;
+import com.malta.plugin.resolver.LayerResolver;
+import com.malta.plugin.util.LayerType;
 
 import java.util.ArrayList;
 import java.util.List;

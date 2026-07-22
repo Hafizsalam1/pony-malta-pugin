@@ -1,9 +1,9 @@
-package builder;
+package com.malta.plugin.builder;
 
 import com.intellij.psi.PsiMethod;
-import model.CallNode;
-import resolver.LayerResolver;
-import util.LayerType;
+import com.malta.plugin.model.CallNode;
+import com.malta.plugin.resolver.LayerResolver;
+import com.malta.plugin.util.LayerType;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.EnumMap;

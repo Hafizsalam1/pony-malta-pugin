@@ -1,7 +1,4 @@
-package util;
-
-import com.intellij.psi.PsiMethod;
-import model.CallNode;
+package com.malta.plugin.filter;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.Enumeration;

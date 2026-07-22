@@ -1,4 +1,4 @@
-package util;
+package com.malta.plugin.util;
 
 public enum OperationType {
     READ,
