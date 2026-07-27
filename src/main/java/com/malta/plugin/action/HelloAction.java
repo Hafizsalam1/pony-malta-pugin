@@ -1,6 +1,6 @@
 package com.malta.plugin.action;
 
-import com.malta.plugin.analyzer.MethodAnalyzer;
+import com.malta.plugin.analyzer.AffectedTableAnalyzer;
 import com.malta.plugin.builder.FlowTreeBuilder;
 import com.malta.plugin.builder.LayerTreeBuilder;
 import com.intellij.icons.AllIcons;
@@ -9,23 +9,21 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
 import com.intellij.psi.*;
+import com.malta.plugin.builder.TableTreeBuilder;
 import com.malta.plugin.controller.CallTreeController;
 import com.malta.plugin.model.CallNode;
+import com.malta.plugin.model.TableAccess;
 import com.malta.plugin.resolver.MethodResolver;
 import com.malta.plugin.service.CallGraphService;
 import org.jetbrains.annotations.NotNull;
-import com.malta.plugin.filter.CallTreeFilter;
 import com.malta.plugin.renderer.CallTreeRenderer;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.util.List;
 
 public class HelloAction extends AnAction {
     @Override
@@ -36,6 +34,17 @@ public class HelloAction extends AnAction {
         if (method == null) {
             return;
         }
+
+        // Jalankan analisa tabel
+        List<TableAccess> tableAccesses = new AffectedTableAnalyzer().analyze(method);
+
+        TableTreeBuilder tableTreeBuilder =
+                new TableTreeBuilder();
+
+        DefaultMutableTreeNode tableRoot =
+                tableTreeBuilder.build(tableAccesses);
+
+
         // Build Call Graph
         CallNode root =  new CallGraphService().analyze(method);
 
@@ -63,12 +72,6 @@ public class HelloAction extends AnAction {
 
         tree.setCellRenderer(new CallTreeRenderer());
 
-        tree.setCellRenderer(
-                new CallTreeRenderer()
-        );
-
-
-        CallTreeFilter filter = new CallTreeFilter();
         JTextField searchField = new JTextField();
 
         JLabel searchIcon = new JLabel(AllIcons.Actions.Search);
@@ -89,7 +92,8 @@ public class HelloAction extends AnAction {
                         searchField,
                         switchButton,
                         flowRoot,
-                        layerRoot
+                        layerRoot,
+                        tableRoot
                 );
 
         controller.init();

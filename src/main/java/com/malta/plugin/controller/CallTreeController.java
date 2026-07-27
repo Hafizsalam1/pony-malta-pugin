@@ -21,6 +21,7 @@ public class CallTreeController {
 
     private final DefaultMutableTreeNode flowRoot;
     private final DefaultMutableTreeNode layerRoot;
+    private final DefaultMutableTreeNode tableRoot;
 
     private DefaultMutableTreeNode currentRoot;
     private DefaultTreeModel currentModel;
@@ -32,8 +33,10 @@ public class CallTreeController {
             JTextField searchField,
             JButton switchButton,
             DefaultMutableTreeNode flowRoot,
-            DefaultMutableTreeNode layerRoot
+            DefaultMutableTreeNode layerRoot,
+            DefaultMutableTreeNode tableRoot
     ) {
+
 
         this.tree = tree;
         this.searchField = searchField;
@@ -41,6 +44,7 @@ public class CallTreeController {
 
         this.flowRoot = flowRoot;
         this.layerRoot = layerRoot;
+        this.tableRoot = tableRoot;
 
         this.currentRoot = flowRoot;
         this.currentModel = new DefaultTreeModel(flowRoot);
@@ -127,7 +131,7 @@ public class CallTreeController {
 
                 PsiMethod method = callNode.getMethod();
 
-                System.out.println(method.getName()+ "  INi Methodnya");
+//                System.out.println(method.getName()+ "  INi Methodnya");
 
 
                 if (method != null && method.canNavigate()) {
@@ -151,10 +155,17 @@ public class CallTreeController {
 
                 switchButton.setText("Flow View");
 
-            } else {
+            } else if(switchButton.getText().equals("Flow View")){
 
                 currentRoot = flowRoot;
                 currentModel = new DefaultTreeModel(flowRoot);
+
+                tree.setModel(currentModel);
+
+                switchButton.setText("Table View");
+            }else{
+                currentRoot = tableRoot;
+                currentModel = new DefaultTreeModel(tableRoot);
 
                 tree.setModel(currentModel);
 
