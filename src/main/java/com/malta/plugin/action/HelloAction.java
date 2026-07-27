@@ -23,6 +23,7 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class HelloAction extends AnAction {
@@ -40,6 +41,13 @@ public class HelloAction extends AnAction {
 
         TableTreeBuilder tableTreeBuilder =
                 new TableTreeBuilder();
+
+
+        System.out.println("Jumlah table access = " + tableAccesses.size());
+
+        for (TableAccess access : tableAccesses) {
+            System.out.println(access.getTableName());
+        }
 
         DefaultMutableTreeNode tableRoot =
                 tableTreeBuilder.build(tableAccesses);
@@ -79,18 +87,30 @@ public class HelloAction extends AnAction {
         JPanel searchPanel = new JPanel(new BorderLayout());
         searchPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        JButton switchButton = new JButton("Layer View");
+        JButton flowButton = new JButton("Flow");
+        JButton layerButton = new JButton("Layer");
+        JButton tableButton = new JButton("Table");
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+
+        buttonPanel.add(flowButton);
+        buttonPanel.add(layerButton);
+        buttonPanel.add(tableButton);
+
+//        JButton switchButton = new JButton("Layer View");
 
         searchPanel.add(searchIcon, BorderLayout.WEST);
         searchPanel.add(searchField, BorderLayout.CENTER);
-        searchPanel.add(switchButton, BorderLayout.EAST);
+        searchPanel.add(buttonPanel, BorderLayout.SOUTH);
 
 
         CallTreeController controller =
                 new CallTreeController(
                         tree,
                         searchField,
-                        switchButton,
+                        flowButton,
+                        layerButton,
+                        tableButton,
                         flowRoot,
                         layerRoot,
                         tableRoot

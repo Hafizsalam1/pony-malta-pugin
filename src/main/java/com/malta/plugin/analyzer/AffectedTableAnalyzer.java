@@ -15,7 +15,9 @@ import com.malta.plugin.util.OperationType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class AffectedTableAnalyzer {
 
@@ -30,8 +32,14 @@ public class AffectedTableAnalyzer {
     private final OperationResolver operationResolver =
             new OperationResolver();
 
+    private final Set<PsiMethod> visited = new HashSet<>();
+
 
     public List<TableAccess> analyze(PsiMethod method) {
+
+        if (!visited.add(method)) {
+            return tableAccesses;
+        }
 
         method.accept(new JavaRecursiveElementVisitor() {
 
@@ -54,6 +62,7 @@ public class AffectedTableAnalyzer {
                         calledMethod,
                         expression
                 );
+                analyze(calledMethod);
             }
         });
 
@@ -117,11 +126,4 @@ public class AffectedTableAnalyzer {
 
         return method;
     }
-
-
-
-
-
-
-
 }

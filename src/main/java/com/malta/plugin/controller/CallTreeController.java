@@ -12,12 +12,16 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 
 public class CallTreeController {
 
     private final JTree tree;
     private final JTextField searchField;
-    private final JButton switchButton;
+    private final JButton flowButton;
+    private final JButton layerButton;
+    private final JButton tableButton;
+
 
     private final DefaultMutableTreeNode flowRoot;
     private final DefaultMutableTreeNode layerRoot;
@@ -31,7 +35,9 @@ public class CallTreeController {
     public CallTreeController(
             JTree tree,
             JTextField searchField,
-            JButton switchButton,
+            JButton flowButton,
+            JButton layerButton,
+            JButton tableButton,
             DefaultMutableTreeNode flowRoot,
             DefaultMutableTreeNode layerRoot,
             DefaultMutableTreeNode tableRoot
@@ -40,7 +46,9 @@ public class CallTreeController {
 
         this.tree = tree;
         this.searchField = searchField;
-        this.switchButton = switchButton;
+        this.flowButton = flowButton;
+        this.layerButton = layerButton;
+        this.tableButton = tableButton;
 
         this.flowRoot = flowRoot;
         this.layerRoot = layerRoot;
@@ -144,36 +152,20 @@ public class CallTreeController {
 
     private void registerSwitchButton() {
 
-        switchButton.addActionListener(e -> {
+        flowButton.addActionListener(e -> switchTo(flowRoot));
 
-            if (switchButton.getText().equals("Layer View")) {
+        layerButton.addActionListener(e -> switchTo(layerRoot));
 
-                currentRoot = layerRoot;
-                currentModel = new DefaultTreeModel(layerRoot);
+        tableButton.addActionListener(e -> switchTo(tableRoot));
+    }
 
-                tree.setModel(currentModel);
+    private void switchTo(DefaultMutableTreeNode root) {
 
-                switchButton.setText("Flow View");
+        currentRoot = root;
+        currentModel = new DefaultTreeModel(root);
 
-            } else if(switchButton.getText().equals("Flow View")){
-
-                currentRoot = flowRoot;
-                currentModel = new DefaultTreeModel(flowRoot);
-
-                tree.setModel(currentModel);
-
-                switchButton.setText("Table View");
-            }else{
-                currentRoot = tableRoot;
-                currentModel = new DefaultTreeModel(tableRoot);
-
-                tree.setModel(currentModel);
-
-                switchButton.setText("Layer View");
-            }
-
-            tree.expandRow(0);
-        });
+        tree.setModel(currentModel);
+        tree.expandRow(0);
     }
 
 
