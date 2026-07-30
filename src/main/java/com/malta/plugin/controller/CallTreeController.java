@@ -1,8 +1,18 @@
 package com.malta.plugin.controller;
 
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.TextRange;
 import com.malta.plugin.filter.CallTreeFilter;
 import com.malta.plugin.model.CallNode;
+import com.malta.plugin.model.TableAccess;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -31,6 +41,7 @@ public class CallTreeController {
     private DefaultTreeModel currentModel;
 
     private final CallTreeFilter filter;
+    private static final Logger LOG = Logger.getInstance(CallTreeController.class);
 
     public CallTreeController(
             JTree tree,
@@ -133,14 +144,46 @@ public class CallTreeController {
 
                 Object userObject = treeNode.getUserObject();
 
-                if (!(userObject instanceof CallNode callNode)) {
-                    return;
+                PsiMethod method = null;
+
+                if (userObject instanceof CallNode callNode) {
+                    method = callNode.getMethod();
+                } else if (userObject instanceof TableAccess access) {
+                    method = access.getCallerMethod();
                 }
 
-                PsiMethod method = callNode.getMethod();
+                if (userObject instanceof TableAccess access) {
 
-//                System.out.println(method.getName()+ "  INi Methodnya");
+                    PsiMethodCallExpression callExpr = access.getCallExpression();
 
+                    if (callExpr == null) {
+                        LOG.warn("TableAccess has no call expression: " + access.getTableName());
+                    } else {
+                        PsiFile file = callExpr.getContainingFile();
+                        VirtualFile vFile = file != null ? file.getVirtualFile() : null;
+
+                        if (vFile == null) {
+                            LOG.warn("No virtual file for call expression in method: " + access.getCallerMethod().getName());
+                        } else {
+                            Project project = access.getCallerMethod().getProject();
+                            int start = callExpr.getTextRange().getStartOffset();
+                            int end = callExpr.getTextRange().getEndOffset();
+
+                            OpenFileDescriptor descriptor = new OpenFileDescriptor(project, vFile, start);
+
+                            Editor editor = FileEditorManager.getInstance(project).openTextEditor(descriptor, true);
+
+                            if (editor != null) {
+                                editor.getCaretModel().moveToOffset(start);
+                                editor.getSelectionModel().setSelection(start, end);
+                                return;
+                            } else {
+                                descriptor.navigate(true);
+                                return;
+                            }
+                        }
+                    }
+                }
 
                 if (method != null && method.canNavigate()) {
                     method.navigate(true);

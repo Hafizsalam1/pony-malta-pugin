@@ -3,35 +3,61 @@ package com.malta.plugin.resolver;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class TableResolver {
 
     @Nullable
     public String resolve(PsiClass repositoryClass) {
+        return resolve(repositoryClass, new HashSet<>());
+    }
+
+    @Nullable
+    private String resolve(PsiClass repositoryClass, Set<String> visited) {
 
         if (repositoryClass == null) {
             return null;
         }
 
-        for (PsiClassType type : repositoryClass.getExtendsListTypes()) {
+        String qualifiedName = repositoryClass.getQualifiedName();
 
+        if (qualifiedName != null && !visited.add(qualifiedName)) {
+            return null;
+        }
+
+        for (PsiClassType type : repositoryClass.getExtendsListTypes()) {
             PsiType[] parameters = type.getParameters();
 
-            if (parameters.length == 0) {
-                continue;
+            if (parameters.length > 0) {
+                PsiClass entity = resolveEntity(parameters[0]);
+
+                if (entity != null) {
+                    String table = resolveTableName(entity);
+
+                    if (table != null) {
+                        return table;
+                    }
+                }
             }
 
-            PsiClass entity =
-                    ((PsiClassType) parameters[0]).resolve();
+            PsiClass resolved = type.resolve();
 
-            if (entity == null) {
-                continue;
+            if (resolved != null) {
+                String table = resolve(resolved, visited);
+
+                if (table != null) {
+                    return table;
+                }
             }
+        }
 
-            String table = resolveTableName(entity);
+        return null;
+    }
 
-            if (table != null) {
-                return table;
-            }
+    private PsiClass resolveEntity(PsiType type) {
+        if (type instanceof PsiClassType classType) {
+            return classType.resolve();
         }
 
         return null;
