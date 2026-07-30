@@ -2,8 +2,11 @@ package com.malta.plugin.analyzer;
 
 import com.intellij.psi.JavaRecursiveElementVisitor;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassType;
+import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiType;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.util.Query;
 import com.malta.plugin.model.CallNode;
@@ -15,7 +18,9 @@ import com.malta.plugin.util.OperationType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class AffectedTableAnalyzer {
 
@@ -30,8 +35,14 @@ public class AffectedTableAnalyzer {
     private final OperationResolver operationResolver =
             new OperationResolver();
 
+    private final Set<PsiMethod> visited = new HashSet<>();
+
 
     public List<TableAccess> analyze(PsiMethod method) {
+
+        if (!visited.add(method)) {
+            return tableAccesses;
+        }
 
         method.accept(new JavaRecursiveElementVisitor() {
 
@@ -54,6 +65,7 @@ public class AffectedTableAnalyzer {
                         calledMethod,
                         expression
                 );
+                analyze(calledMethod);
             }
         });
 
@@ -65,7 +77,7 @@ public class AffectedTableAnalyzer {
             PsiMethod calledMethod,
             PsiMethodCallExpression expression) {
 
-        PsiClass repository = calledMethod.getContainingClass();
+        PsiClass repository = resolveRepositoryClass(expression, calledMethod);
 
         if (repository == null || !repositoryResolver.isRepository(repository)) {
             return;
@@ -94,6 +106,33 @@ public class AffectedTableAnalyzer {
         );
     }
 
+    private PsiClass resolveRepositoryClass(
+            PsiMethodCallExpression expression,
+            PsiMethod calledMethod) {
+
+        PsiExpression qualifier = expression.getMethodExpression().getQualifierExpression();
+
+        if (qualifier != null) {
+            PsiType qualifierType = qualifier.getType();
+
+            if (qualifierType instanceof PsiClassType classType) {
+                PsiClass resolved = classType.resolve();
+
+                if (resolved != null && repositoryResolver.isRepository(resolved)) {
+                    return resolved;
+                }
+            }
+        }
+
+        PsiClass containingClass = calledMethod.getContainingClass();
+
+        if (containingClass != null && repositoryResolver.isRepository(containingClass)) {
+            return containingClass;
+        }
+
+        return null;
+    }
+
     private PsiMethod resolveImplementation(PsiMethod method) {
 
         PsiClass psiClass = method.getContainingClass();
@@ -117,11 +156,4 @@ public class AffectedTableAnalyzer {
 
         return method;
     }
-
-
-
-
-
-
-
 }

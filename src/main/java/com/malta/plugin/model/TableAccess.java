@@ -38,4 +38,10 @@ public class TableAccess {
         return callExpression;
     }
 
+
+    @Override
+    public String toString() {
+        return operation + " - " + callerMethod.getName() + "()";
+    }
+
 }
